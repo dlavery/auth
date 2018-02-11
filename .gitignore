@@ -103,3 +103,4 @@ ENV/
 # local
 bin/
 pyvenv.cfg
+pip-selfcheck.json
