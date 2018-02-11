@@ -3,11 +3,12 @@
 An authentication module for use in any enterprise grade application.
 
 ## Dependencies
-cryptography
-Flask
-Flask-PyMongo
-PyCryptodome
-PyJWT
+Python modules:
+- cryptography
+- Flask
+- Flask-PyMongo
+- PyCryptodome
+- PyJWT
 
 ## Setup
 Create a public/private key pair using OpenSSL (entering a passphrase):
