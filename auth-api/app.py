@@ -16,7 +16,7 @@ app.config['MONGO_DBNAME'] = config['DATABASE']['dbName']
 app.config['MONGO_URI'] = config['DATABASE']['dbURI']
 logfile = config['LOGGING']['logFile']
 loglevel = LOG_LEVELS[config['LOGGING']['logLevel']]
-app.config['SERVER_NAME'] = config['APPLICATION']['servername']
+app.config['SERVER_NAME'] = config['APPLICATION']['serverName']
 app.config['DEBUG'] = config['APPLICATION']['debug']
 
 # Set up logging
