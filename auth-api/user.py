@@ -13,11 +13,14 @@ def validate_user(func):
             raise UserException("user credentials need a user name")
         elif not obj.upass:
             raise UserException("user credentials need a password")
-        elif (obj.recovery_email
-        and not re.match("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", obj.recovery_email)):
+        elif not re.match('^[A-Za-z0-9!@#$%]{8,16}$', obj.upass):
+            raise UserException("password must be 8-16 characters long and should be a mix of upper and lowercase letters, numbers, and the special characters !@#$%")
+        elif not re.match("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", obj.recovery_email):
             raise UserException("invalid recovery email address")
+        elif (not type(obj.functions) == list or obj.functions == []):
+            raise UserException("user credentials need list of allowed functions")
         else:
-            func(obj)
+            return func(obj)
 
     return validate
 
@@ -27,35 +30,37 @@ class User:
         self.name = ''
         self.uname = ''
         self.upass = ''
-        self.recovery_SMS = ''
         self.recovery_email = ''
+        self.functions = []
 
     def setup(self):
-        self.db.credentials.create_index([('uname', 1)], unique=True, sparse=True)
-        self.db.credentials.create_index([('recovery_email', 1)], unique=True, sparse=True)
-        self.db.credentials.create_index([('recovery_SMS', 1)], unique=True, sparse=True)
+        self.db.credentials.create_index([('uname', 1)], unique=True, sparse=False)
+        self.db.credentials.create_index([('recovery_email', 1)], unique=True, sparse=False)
 
     @validate_user
     def create(self):
-        self.creds_coll = self.db.credentials
-        attrs = {}
-        attrs['name'] = self.name
-        if (self.uname):
-            attrs['uname'] = self.uname
-        if self.upass:
-            hash_object = SHA256.new(data=bytes(self.upass, 'utf-8'))
-            dig = hash_object.digest()
-            self.upass = str(dig)
-            attrs['upass'] = self.upass
-        if (self.recovery_SMS):
-            attrs['recovery_SMS'] = self.recovery_SMS
-        if (self.recovery_email):
-            attrs['recovery_email'] = self.recovery_email
-        attrs['created'] = str(datetime.utcnow())
-        task_id = self.creds_coll.insert(attrs)
+        self.setup()
+        hash_object = SHA256.new(data=bytes(self.upass, 'utf-8'))
+        dig = hash_object.digest()
+        self.upass = str(dig)
+        doc = {
+            'name': self.name,
+            'uname': self.uname,
+            'upass': self.upass,
+            'recovery_email': self.recovery_email,
+            'functions': self.functions,
+            'created': str(datetime.utcnow())
+        }
+        task_id = self.db.credentials.insert(doc)
         return str(task_id)
 
     def read(self):
+        pass
+
+    def update(self):
+        pass
+
+    def delete(self):
         pass
 
 class UserException(Exception):

@@ -1,25 +1,24 @@
 import argparse
 import configparser
 import pymongo
+import re
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+from client import Client
 
 def loadclient(name, certfile, ref):
     with open(certfile) as f:
         clientcert = f.read()
     config = configparser.ConfigParser()
     config.read('auth-api.cfg')
-    client = MongoClient(config['DATABASE']['dbURI'])
-    db = client[config['DATABASE']['dbName']]
-    INDEX_ASCENDING = 1
-    INDEX_DESCENDING = -1
-    db.clients.create_index([('ref', 1)], unique=True)
-    doc = {
-        "name": name,
-        "cert": clientcert,
-        "ref": ref
-    }
-    task_id = db.clients.insert(doc)
+    mongoclient = MongoClient(config['DATABASE']['dbURI'])
+    db = mongoclient[config['DATABASE']['dbName']]
+    authclient = Client()
+    authclient.db = db
+    authclient.name = name
+    authclient.cert = clientcert
+    authclient.ref = ref
+    return authclient.create()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -28,7 +27,8 @@ if __name__ == '__main__':
     parser.add_argument('clientref', help="Short reference number for client")
     args = parser.parse_args()
     try:
-        loadclient(args.clientname, args.clientcert, args.clientref)
+        clientid = loadclient(args.clientname, args.clientcert, args.clientref)
+        print("Client %s created" % clientid)
     except DuplicateKeyError as dup:
         print("Client reference %s already exists, please try again" % args.clientref)
     except Exception as err:

@@ -1,35 +1,38 @@
+import user
+import re
 import argparse
 import configparser
-import pymongo
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+from user import User
 
-def loaduser(name, certfile, ref):
-    with open(certfile) as f:
-        clientcert = f.read()
+def loaduser(name, uname, upass, recovery_email, functions):
     config = configparser.ConfigParser()
     config.read('auth-api.cfg')
     client = MongoClient(config['DATABASE']['dbURI'])
     db = client[config['DATABASE']['dbName']]
-    INDEX_ASCENDING = 1
-    INDEX_DESCENDING = -1
-    db.clients.create_index([('ref', 1)], unique=True)
-    doc = {
-        "name": name,
-        "cert": clientcert,
-        "ref": ref
-    }
-    task_id = db.clients.insert(doc)
+    u = User()
+    u.db = db
+    u.name = name
+    u.uname = uname
+    u.upass = upass
+    u.functions = functions
+    u.recovery_email = recovery_email
+    return u.create()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('clientname', help='The name of the client')
-    parser.add_argument('clientcert', help="The file containing the client's public certificate")
-    parser.add_argument('clientref', help="Short reference number for client")
+    parser.add_argument('name', help="The name of the user")
+    parser.add_argument('uname', help="The username of the user")
+    parser.add_argument('upass', help="The user's password")
+    parser.add_argument('email', help="An email address for password recovery")
+    parser.add_argument('functions', help="A comma separated list of functions the user has access to")
     args = parser.parse_args()
+    funcs = re.split(',\s*', args.functions)
     try:
-        loadclient(args.clientname, args.clientcert, args.clientref)
+        userid = loaduser(args.name, args.uname, args.upass, args.email, funcs)
+        print("User %s created" % userid)
     except DuplicateKeyError as dup:
-        print("Client reference %s already exists, please try again" % args.clientref)
+        print("User already exists, please try again")
     except Exception as err:
         print(str(err))
