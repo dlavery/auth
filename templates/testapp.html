@@ -1,0 +1,12 @@
+{% extends "index.html" %}
+{% block title %}Test Auth{% endblock %}
+{% block content %}
+  <h1>Test Auth</h1>
+  <form action="{{ data.postURL }}" method="POST">
+    <div class="form-group">
+      <label for="formSubmitButton">Please login via the auth module</label>
+      <input type="submit" id="formSubmitButton" class="btn btn-primary" value="continue">
+      <input type="hidden" name="clientToken" value="{{ data.clientToken }}">
+    </div>
+  </form>
+{% endblock %}

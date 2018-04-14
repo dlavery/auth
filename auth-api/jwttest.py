@@ -5,7 +5,8 @@ import jwt
 import base64
 import json
 
-print("jwt: " + str({'some': 'payload'}))
+dic = {'some': 'payload', 'list': ['a', 'b']}
+print("jwt: " + str(dic))
 
 # client public key for encryption
 client_key = '''-----BEGIN PUBLIC KEY-----
@@ -20,7 +21,7 @@ CQIDAQAB
 
 # encode jwt w/ auth private key
 prvkey = RSA.import_key(open('authsign.pem').read(), passphrase='password123').exportKey()
-encoded = jwt.encode({'some': 'payload'}, prvkey, algorithm='RS256')
+encoded = jwt.encode(dic, prvkey, algorithm='RS256')
 
 # encrypt jwt w/ client public key
 recipient_key = RSA.import_key(client_key)
@@ -61,4 +62,5 @@ decrypted_payload = cipher_aes.decrypt_and_verify(ciphertext, tag)
 # decode jwt w/ auth public key
 pubkey = RSA.import_key(open('authsign_public.pem').read()).exportKey()
 decoded = jwt.decode(decrypted_payload, pubkey, algorithms='RS256')
+print("Equivalient: " + str(dic == decoded))
 print("Decoded: " + str(decoded))

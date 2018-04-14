@@ -1,7 +1,8 @@
-from flask import Flask
-from flask_pymongo import PyMongo
 import configparser
 import logging
+from flask import Flask
+from flask_pymongo import PyMongo
+from Crypto.PublicKey import RSA
 
 # Value mapping
 LOG_LEVELS = {'INFO': logging.INFO, 'DEBUG': logging.DEBUG, 'WARN': logging.DEBUG, 'ERROR': logging.ERROR}
@@ -28,3 +29,13 @@ app.logger.setLevel(loglevel)
 
 # Set up database
 mongo = PyMongo(app)
+
+# Get crypto
+pubkeyfile = config['PKI']['pubkeyFile']
+authpublickey = RSA.import_key(open(pubkeyfile).read()).exportKey()
+keyfile = config['PKI']['keyFile']
+passphrase = config['PKI']['passPhrase']
+authprivatekey = RSA.import_key(open(keyfile).read(), passphrase=passphrase).exportKey()
+
+# Get session secret
+app.secret_key = config['SESSIONS']['secretKey']

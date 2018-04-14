@@ -1,0 +1,12 @@
+{% extends "index.html" %}
+{% block title %}Auth:Redirect{% endblock %}
+{% block content %}
+  <h1>Login Successful</h1>
+  <form action="{{ data.redirectURL }}" method="POST">
+    <div class="form-group">
+      <label for="loginButton">Return to the calling application</label>
+      <input type="submit" value="continue" id="loginButton" class="btn btn-primary">
+    </div>
+    <input type="hidden" name="clientToken" value="{{ data.clientToken }}">
+  </form>
+{% endblock %}

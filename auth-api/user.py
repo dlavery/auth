@@ -1,7 +1,12 @@
 import re
+import jwt
+import base64
 from datetime import date
 from datetime import datetime
 from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Random import get_random_bytes
 
 def validate_user(func):
     def validate(obj):
@@ -27,6 +32,7 @@ def validate_user(func):
 class User:
 
     def __init__(self):
+        self.db = None
         self.name = ''
         self.uname = ''
         self.upass = ''
@@ -40,9 +46,7 @@ class User:
     @validate_user
     def create(self):
         self.setup()
-        hash_object = SHA256.new(data=bytes(self.upass, 'utf-8'))
-        dig = hash_object.digest()
-        self.upass = str(dig)
+        self.upass = str(self.hashit(self.upass))
         doc = {
             'name': self.name,
             'uname': self.uname,
@@ -54,14 +58,47 @@ class User:
         task_id = self.db.credentials.insert(doc)
         return str(task_id)
 
+    def hashit(self, s):
+        hash_object = SHA256.new(data=bytes(s, 'utf-8'))
+        return hash_object.digest()
+
     def read(self):
         pass
+
+    def check_password(self, uname, upass):
+        self.uname = uname
+        u = self.db.credentials.find_one({'uname': self.uname})
+        if not u:
+            self.uname = ''
+            return False
+        self.name = u['name']
+        self.functions = u['functions']
+        dig = str(self.hashit(upass))
+        return (dig == u['upass'])
 
     def update(self):
         pass
 
     def delete(self):
         pass
+
+    def create_access_token(self, privatekey, clientcert):
+        if not self.uname:
+            return ''
+        # encode jwt w/ auth private key
+        encoded = jwt.encode({'uname': self.uname, 'name': self.name, 'functions': self.functions}, privatekey, algorithm='RS256')
+        # encrypt jwt w/ client public key
+        recipient_key = RSA.import_key(clientcert)
+        session_key = get_random_bytes(16)
+        # encrypt the session key with the public RSA key
+        cipher_rsa = PKCS1_OAEP.new(recipient_key)
+        encrypted_session_key = cipher_rsa.encrypt(session_key)
+        # encrypt the data with the AES session key
+        cipher_aes = AES.new(session_key, AES.MODE_EAX)
+        ciphertext, tag = cipher_aes.encrypt_and_digest(encoded)
+        encrypted_payload = encrypted_session_key + cipher_aes.nonce + tag + ciphertext
+        data = str(base64.standard_b64encode(encrypted_payload), 'ascii')
+        return data
 
 class UserException(Exception):
     pass
