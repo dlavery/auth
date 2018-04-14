@@ -27,7 +27,7 @@ def root():
 @app.route('/testresult', methods=['GET', 'POST'])
 @check_authorisation('test_page')
 def testresult():
-    return 'You have successfully authenticated and are authorised to see this page'
+    return 'Congratulations! You have successfully authenticated and are authorised to see this page.'
 
 if __name__ == "__main__":
     app.run(port=5999, debug=True)
