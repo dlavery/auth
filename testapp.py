@@ -1,8 +1,8 @@
 import os
 from functools import wraps
 from flask import Flask, render_template
-from flask import request, escape
-from authverify.verify import verify_user
+from flask import request, escape, redirect, url_for
+from authverify.authorise import Authorise
 
 app = Flask(__name__)
 
@@ -10,7 +10,14 @@ def check_authorisation(required_authorisation=None):
     def decorator(func):
         @wraps(func)
         def check_auth(*args, **kwargs):
-            if not verify_user(required_authorisation, request.headers, request.data, request.form):
+            auth = Authorise(
+                keyfilelocation='',
+                authpublickeyfile='authsign_public.pem',
+                privatekeyfile='clientencrypt.pem',
+                privatekeypassphrase='password123'
+            )
+            if not auth.authorise_user(required_authorisation, request.headers, request.data, request.form):
+                #return redirect(url_for('root'), code=302)
                 return 'Not Authorised', 403
             return func(*args, **kwargs)
         return check_auth
