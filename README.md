@@ -1,6 +1,9 @@
 # Auth
 ## Summary
-An authentication module for use in any enterprise grade application.
+An authentication/authorisation suite for use in any enterprise grade application.
+
+## Authentication/Authorisation Flow
+![Sequence diagram](AuthFlow.png)
 
 ## Dependencies
 Python modules:
@@ -10,6 +13,7 @@ Python modules:
 - PyCryptodome
 - PyJWT
 - PyMongo
+- base64
 
 ## Setup
 Create a public/private key pair using OpenSSL (entering a passphrase, in this example password123):
