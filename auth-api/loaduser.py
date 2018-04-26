@@ -6,13 +6,14 @@ from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from user import User
 
-def loaduser(name, uname, upass, recovery_email, functions):
+def loaduser(clientref, name, uname, upass, recovery_email, functions):
     config = configparser.ConfigParser()
     config.read('auth-api.cfg')
     client = MongoClient(config['DATABASE']['dbURI'])
     db = client[config['DATABASE']['dbName']]
     u = User()
     u.db = db
+    u.clientref = clientref
     u.name = name
     u.uname = uname
     u.upass = upass
@@ -22,6 +23,7 @@ def loaduser(name, uname, upass, recovery_email, functions):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('clientref', help="The cliemt service reference")
     parser.add_argument('name', help="The name of the user")
     parser.add_argument('uname', help="The username of the user")
     parser.add_argument('upass', help="The user's password")
@@ -30,7 +32,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     funcs = re.split(',\s*', args.functions)
     try:
-        userid = loaduser(args.name, args.uname, args.upass, args.email, funcs)
+        userid = loaduser(args.clientref, args.name, args.uname, args.upass, args.email, funcs)
         print("User %s created" % userid)
     except DuplicateKeyError as dup:
         print("User already exists, please try again")

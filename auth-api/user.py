@@ -1,8 +1,7 @@
 import re
 import jwt
 import base64
-from datetime import date
-from datetime import datetime
+import datetime
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES, PKCS1_OAEP
@@ -12,6 +11,8 @@ def validate_user(func):
     def validate(obj):
         if not obj.db:
             raise UserException("user credentials need a database")
+        elif not obj.clientref:
+            raise UserException("user credentials need a client reference")
         elif not obj.name:
             raise UserException("user credentials need a name")
         elif not obj.uname:
@@ -33,6 +34,7 @@ class User:
 
     def __init__(self):
         self.db = None
+        self.clientref = ''
         self.name = ''
         self.uname = ''
         self.upass = ''
@@ -40,20 +42,21 @@ class User:
         self.functions = []
 
     def setup(self):
-        self.db.credentials.create_index([('uname', 1)], unique=True, sparse=False)
-        self.db.credentials.create_index([('recovery_email', 1)], unique=True, sparse=False)
+        self.db.credentials.create_index([('clientref', 1), ('uname', 1)], unique=True, sparse=False)
+        self.db.credentials.create_index([('clientref', 1), ('recovery_email', 1)], unique=True, sparse=False)
 
     @validate_user
     def create(self):
         self.setup()
         self.upass = str(self.hashit(self.upass))
         doc = {
+            'clientref': self.clientref,
             'name': self.name,
             'uname': self.uname,
             'upass': self.upass,
             'recovery_email': self.recovery_email,
             'functions': self.functions,
-            'created': str(datetime.utcnow())
+            'created': str(datetime.datetime.utcnow())
         }
         task_id = self.db.credentials.insert(doc)
         return str(task_id)
@@ -65,9 +68,10 @@ class User:
     def read(self):
         pass
 
-    def check_password(self, uname, upass):
+    def check_password(self, clientref, uname, upass):
+        self.clientref = clientref
         self.uname = uname
-        u = self.db.credentials.find_one({'uname': self.uname})
+        u = self.db.credentials.find_one({'clientref': self.clientref, 'uname': self.uname})
         if not u:
             self.uname = ''
             return False
@@ -86,7 +90,8 @@ class User:
         if not self.uname:
             return ''
         # encode jwt w/ auth private key
-        encoded = jwt.encode({'uname': self.uname, 'name': self.name, 'functions': self.functions}, privatekey, algorithm='RS256')
+        exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        encoded = jwt.encode({'uname': self.uname, 'name': self.name, 'functions': self.functions, 'exp': exp}, privatekey, algorithm='RS256')
         # encrypt jwt w/ client public key
         recipient_key = RSA.import_key(clientcert)
         session_key = get_random_bytes(16)

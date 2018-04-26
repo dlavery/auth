@@ -51,7 +51,7 @@ class Client:
         base64token = str(base64.standard_b64encode(token), 'ascii')
         doc['jwt'] = base64token
         clientid = self.db.clients.insert(doc)
-        return str(clientid)
+        return doc['jwt']
 
     def readbyreference(self, reference):
         return self.db.clients.find_one({'ref': reference})

@@ -48,7 +48,7 @@ def auth():
         else:
             u = User()
             u.db = mongo.db
-            if not u.check_password(request.form['uname'], request.form['upass']):
+            if not u.check_password(doc['ref'], request.form['uname'], request.form['upass']):
                 alertmessage = 'Your username and password do not match our records'
             else:
                 jwttoken = u.create_access_token(authprivatekey, doc['cert'])

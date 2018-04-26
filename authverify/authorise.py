@@ -2,6 +2,8 @@ import os
 import json
 import jwt
 import base64
+from datetime import date
+from datetime import datetime
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Random import get_random_bytes
@@ -56,8 +58,9 @@ class Authorise:
             pubkey = RSA.import_key(open(self.authpublickeyfile).read()).exportKey()
             decoded = jwt.decode(decrypted_payload, pubkey, algorithms='RS256')
             # return authorisation decision
-            if 'functions' in decoded and authorisation in decoded['functions']:
-                return True
+            if 'exp' in decoded and decoded['exp'] <= datetime.utcnow().timestamp():
+                if 'functions' in decoded and authorisation in decoded['functions']:
+                    return True
         except Exception as err:
-            pass
+            return str(err)
         return False

@@ -33,8 +33,8 @@ if __name__ == '__main__':
     parser.add_argument('clientURL', help="Redirect URL for client")
     args = parser.parse_args()
     try:
-        clientid = loadclient(args.clientname, args.clientcert, args.clientref, args.clientURL)
-        print("Client %s created" % clientid)
+        jwttoken = loadclient(args.clientname, args.clientcert, args.clientref, args.clientURL)
+        print("Client token %s" % jwttoken)
     except DuplicateKeyError as dup:
         print("Client reference %s already exists, please try again" % args.clientref)
     except Exception as err:

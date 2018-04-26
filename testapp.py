@@ -26,7 +26,7 @@ def check_authorisation(required_authorisation=None):
 @app.route('/', methods=['GET'])
 def root():
     data = {
-        'clientToken': 'ZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKU1V6STFOaUo5LmV5SnVZVzFsSWpvaVZHVnpkQ0JEYkdsbGJuUWlMQ0p5WldabGNtVnVZMlVpT2lKMFpYTjBNREVpTENKbGVIQWlPakUxTlRNNE56YzVNakF1TURVNU5EUTJmUS4xVVRDd0gxMk1yYk1OTF9sWjVoT01WTWoyOHlpXzlVYVczcUtEWG5qOUJRdVlQYUVnMUVzQU9KaDBDNGM5RTdpRmRCYUNEdXdFMWQzWXlEXzlNdnFPOERRU29uVy1seWluZTBZd190cFZEc3EyVUE1UHQ0aXdRR1pqSFdVZDhNQXpESmRaekIwQWxUN0xucEp0T0wtU0QtemZHRW5aVXhkMW5MemRFUWNoR3pWa1JIS01rLUxhS2hGbm1kLVlscFIyaC1VbEVfbHhFTTJCOTU2aVJCZ05ScjNuWTdMOXd4LTlTWW5yN2VnajlUNnlRVFdSUkFaOE9CLW85V2hlLXExUTlja0VqUUJxNGtxX0x0b1RfVjFsOFEya2JWeGxIWnE5Ylo2alh0WUNaWlR6OVp1d2tDSWR5bHlpLXd4Q3V1dHVZZ0hrY2F0WlRKRU1oeGZzeHVBY0E=',
+        'clientToken': 'ZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKU1V6STFOaUo5LmV5SnVZVzFsSWpvaWRHVnpkREVpTENKeVpXWmxjbVZ1WTJVaU9pSjBaWE4wTVRJek5DSXNJbVY0Y0NJNk1UVTFOakkxT1RFMk1DNHdPREkwTXpWOS5DWWZOaF9pcC0wODhKWGFScjJ6VTBRSzFlZ1A3TUlYWnh5QnN1N2o3WWk5MHVRVFBxa0VadTR1ZUtJVGNHSXo0R090NHA1R3M2RlNPem4wU1k5M1pvSG84dk41U3BLanJIeHlHTTFtRTJMV1lYTnhHem1kSGZVTXc4YTFmNmg1NHBpWEJJWlVfc2dkSWdSOWpnb1EtUHdhc2xzdk82V2JZSkxOVS1GanVFdWY2endsZXRlb0w2ZEhCazhiNXA3V1hGRHh2NzQwcEVzU25oMXdtemE5Y2RobXpMVDRoZVhmYlpRLTlYUGlIdzloQVduRVpqZVdwOE84NnJzVUxoQ05fZDIzWHN4QmdkMElkWEx1QmJGTXJRU1hHckZtcVFNU3hXM29QVV91TU14ZFhuSlh0VFRycEtveFhpZ0p6RE5YN3Fsc0kwUjBzTHlvbHJLMXlabWZ5Nmc=',
         'postURL': 'http://localhost:5001/authclient'
     }
     return render_template('testapp.html', data=data)
@@ -34,6 +34,7 @@ def root():
 @app.route('/testresult', methods=['GET', 'POST'])
 @check_authorisation('test_page')
 def testresult():
+    # TODO: save the user access token in the session
     return 'Congratulations! You have successfully authenticated and are authorised to see this page.'
 
 if __name__ == "__main__":

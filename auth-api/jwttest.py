@@ -1,11 +1,13 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Random import get_random_bytes
+import datetime
 import jwt
 import base64
 import json
 
-dic = {'some': 'payload', 'list': ['a', 'b']}
+exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+dic = {'some': 'payload', 'list': ['a', 'b'], 'exp': exp}
 print("jwt: " + str(dic))
 
 # client public key for encryption
@@ -44,7 +46,7 @@ data = json.loads(j)
 
 # decrypt jwt w/ client private key
 b = base64.standard_b64decode(bytes(data['payload'], 'ascii'))
-private_key = RSA.import_key(open("clientencrypt.pem").read(), passphrase='password123')
+private_key = RSA.import_key(open("../clientencrypt.pem").read(), passphrase='password123')
 x = private_key.size_in_bytes()
 enc_session_key = b[:x]
 nonce = b[x: x+16]
